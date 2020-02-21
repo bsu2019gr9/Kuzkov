@@ -20,14 +20,8 @@ int findIdMin(int[], int);
 void howManyMaxMin(int[], const int, int&, int&);
 int howMany(int[], const int, int);
 
-void getPositiveNegativeArray(int[], const int, int&, int&);
 void divArray(int[], const int, int[], int[]);
 void halfArray(int[], const int, int[], int[]);
 
-bool changeArray1(int[], const int);
-bool changeArray2(int[], const int);
-bool changeArray3(int[], const int);
-
 int findIdFirstMax(int arr[], int N);
-int findSumIf(int arr[], int n);
 int findIdLastMin(int arr[], int N);
