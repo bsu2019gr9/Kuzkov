@@ -1,35 +1,39 @@
 #include <iostream>
 #include <time.h>
+#include "1D-functions.h"
 
 using namespace std;
 
-int* giveMemory(int n = 10)
-{
-  return new int[n];
+void allocMemory(int *&arr, const int N) {
+  arr = new int[N];
 }
 
-void freeMemory(int arr[])
-{
-  if (!arr)
-  {
-    cout << "Empty array\n";
-    return;
-  }
+int* allocMemory(const int N) {
+  return new int[N];
+}
 
+void freeMemory(int *&arr, const int N) {
   delete[] arr;
 }
 
-int findIdMin(int arr[], int N)
+void initArray(int arr[], const int N, int A, int B)
 {
-  int minIndex = 0;
-
-  for (int i = 1; i < N; i++)
-    if (arr[i] < arr[minIndex]) minIndex = i;
+  if (A > B) swap(A, B);
   
-  return minIndex;
+  double k1 = (B - A) * 1.0 / (RAND_MAX);
+  
+  for (int i = 0; i < N; i++)
+    arr[i] = k1* rand() + A;
 }
 
-int findIdMax(int arr[], int N)
+void printArray(int arr[], const int N)
+{
+  for (int i = 0; i < N; ++i)
+    cout << arr[i] << " ";
+  cout << '\n';
+}
+
+int indexOfMax(int arr[], int N)
 {
   int maxIndex = 0;
 
@@ -39,11 +43,14 @@ int findIdMax(int arr[], int N)
   return maxIndex;
 }
 
-void printArray(int arr[], const int N)
+int indexOfMin(int arr[], int N)
 {
-  for (int i = 0; i < N; ++i)
-    cout << arr[i] << " ";
-  cout << '\n';
+  int minIndex = 0;
+
+  for (int i = 1; i < N; i++)
+    if (arr[i] < arr[minIndex]) minIndex = i;
+  
+  return minIndex;
 }
 
 void inputArray(int arr[], const int N)
@@ -68,8 +75,8 @@ int findMin(int arr[], int N)
 
   for (int i = 1; i < N; i++)
     if (arr[i] < min)
-      min = arr[i];
   
+      min = arr[i];
   return min;
 }
 
@@ -84,7 +91,7 @@ void findMaxMin(int arr[], int N, int &min, int &max)
   }
 }
 
-int findSum(int arr[], int N)
+int getSum(int arr[], int N)
 {
   int sum = 0;
 
@@ -92,18 +99,6 @@ int findSum(int arr[], int N)
     sum += arr[i];
   
   return sum;
-}
-
-void initArray(int arr[], const int N, int A = -10, int B = 10)
-{
-  srand(time(NULL));
-
-  if (A > B) swap(A, B);
-  
-  double k1 = (B - A) * 1.0 / (RAND_MAX);
-  
-  for (int i = 0; i < N; i++)
-    arr[i] = k1* rand() + A;
 }
 
 void howManyMaxMin(int arr[], const int N, int &countOfMax, int &countOfMin)
@@ -141,16 +136,8 @@ int howMany(int arr[], const int N, int n)
   return count;
 }
 
-void halfArray(int A[], const int N, int B[], int C[])
-{
-  int r = N / 2;
-  for (int i = 0; i < r; ++i) B[i] = A[i];
-  for (int i = 0; r + i < N; ++i) C[i] = A[r + i];
-}
-
 void divArray(int A[], const int N, int B[], int C[])
 {
-
   for (int i = 0, k = 0, j = 0; i < N; ++i)
   {
     if (A[i] > 0)
@@ -164,32 +151,20 @@ void divArray(int A[], const int N, int B[], int C[])
   }
 }
 
+void halfArray(int A[], const int N, int B[], int C[])
+{
+  int r = N / 2;
+  for (int i = 0; i < r; ++i) B[i] = A[i];
+  for (int i = 0; r + i < N; ++i) C[i] = A[r + i];
+}
+
 void reverse(int arr[], const int N)
 {
   for (int i = 0; i < N / 2; i++)
     swap(arr[i], arr[N - 1 - i]);
 }
 
-int findIdLastMin(int arr[], int N)
-{
-  int min = 0;
-  for (int i = 1; i < N; i++)
-    if (arr[i] <= arr[min]) min = i;
-  return min;
-}
-
-int findIdFirstMax(int arr[], int N)
-{
-  int maxIndex = 0;
-  
-  for (int i = 1; i < N; i++)
-    if (arr[i] > arr[maxIndex])
-      maxIndex = i;
-
-  return maxIndex;
-}
-
-void moveRight(int arr[], const int N)
+void shiftRight(int arr[], const int N)
 {
   int* temp = new int[N];
 
@@ -200,7 +175,7 @@ void moveRight(int arr[], const int N)
     arr[i] = temp[i];
 }
 
-void moveLeft(int arr[], const int N)
+void shiftLeft(int arr[], const int N)
 {
   int* temp = new int[N];
 

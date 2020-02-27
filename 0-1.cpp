@@ -9,6 +9,7 @@
 #include <iostream>
 #include <iomanip>
 #include <cmath>
+#include "lib/1D-functions.h"
 
 using namespace std;
 
@@ -16,6 +17,9 @@ double arctg(double, double);
 double exp(double, double);
 
 int main() {
+  int* arr = allocMemory(10);
+  initArray(arr, 10);
+
   const int WIDTH = 10;
   double a = 0, b = 1, eps = 0.0001, h = 0.2;
 
