@@ -6,7 +6,7 @@
 using namespace std;
 
 int **createArray(const int, const int);
-void freeMemory(int**, const int, const int);
+void freeMemory(int**&, const int, const int);
 void initArray(int**, const int, const int, int = 10, int = -10);
 void printArray(int**, const int, const int);
 void swapMaxAndMinColumns(int **, const int, const int);
@@ -49,11 +49,15 @@ int **createArray(const int N, const int M)
   return arr;
 }
 
-void freeMemory(int **arr, const int N, const int M)
+void freeMemory(int **&arr, const int N, const int M)
 {
   for (int i = 0; i < N; i++)
+  {
     delete[] arr[i];
+    arr[i] = nullptr;
+  }
   delete[] arr;
+  arr = nullptr;
 }
 
 void initArray(int **arr, const int N, const int M, int A, int B)

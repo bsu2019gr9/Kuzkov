@@ -14,6 +14,7 @@ int* allocMemory(const int N) {
 
 void freeMemory(int *&arr, const int N) {
   delete[] arr;
+  arr = nullptr;
 }
 
 void initArray(int arr[], const int N, int A, int B)
