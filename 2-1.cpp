@@ -8,8 +8,9 @@ using namespace std;
 int **createArray(const int, const int);
 void freeMemory(int**&, const int, const int);
 void initArray(int**, const int, const int, int = 10, int = -10);
-void printArray(int**, const int, const int);
+void printArray(int**, const int, const int, const int = 3);
 void swapMaxAndMinColumns(int **, const int, const int);
+int getCountOfOdd(int*, int*);
 
 /* 
  * В массиве А(N,М) столбец с минимальным
@@ -23,7 +24,7 @@ int main()
   srand(time(NULL));
 
   int N, M;
-  cout << "Enter N, M: "; cin >> N >> M;
+  cout << "Enter cols, rows: "; cin >> N >> M;
   int **arr = createArray(N, M);
 
   initArray(arr, N, M);
@@ -71,46 +72,51 @@ void initArray(int **arr, const int N, const int M, int A, int B)
       arr[i][j] = k1 * rand() + A;
 }
 
-void printArray(int **arr, const int N, const int M)
+void printArray(int **arr, const int N, const int M, const int columnSize)
 {
   for (int i = 0; i < M; i++)
   {
     for (int j = 0; j < N; j++)
-      cout << setw(3) << arr[j][i] << " ";
-    cout << '\n';
+      cout << setw(columnSize) << arr[j][i] << " ";
+    cout << endl;
   }
 }
 
 void swapMaxAndMinColumns(int **arr, const int N, const int M)
 { 
-  int max, min, count;
-  int indexOfMax = 0, indexOfMin = 0;
+  int max, min;
+  int **pmax, **pmin;
 
-  for (int i = 0; i < M; i++)
-    if (abs(arr[0][i]) % 2)
-      count++;
+  max = min = getCountOfOdd(*arr, *arr + M);
+  pmin = pmax = arr;
 
-  max = min = count;
-
-  for (int i = 1; i < N; i++)
+  for (int **p = arr + 1; p < arr + N; p++)
   {
-    count = 0;
-    for (int j = 0; j < M; j++)
-      if (abs(arr[i][j]) % 2)
-        count++;
+    int count = getCountOfOdd(*p, *p + M);
 
     if (count > max)
     {
-      indexOfMax = i;
+      pmax = p;
       max = count;
     }
 
     if (count < min)
     {
-      indexOfMin = i;
+      pmin = p;
       min = count;
     }
   }
 
-  swap(arr[indexOfMin], arr[indexOfMax]);
+  swap(*pmax, *pmin);
+}
+
+int getCountOfOdd(int *begin, int *end)
+{
+  int count = 0;
+
+  for (int *p = begin; p < end; p++)
+    if (abs(*p) % 2)
+      count++;
+  
+  return count;
 }
