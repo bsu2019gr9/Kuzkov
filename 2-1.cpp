@@ -1,7 +1,5 @@
 #include <iostream>
 #include <iomanip>
-#include <algorithm>
-#include "lib/1D-functions.h"
 
 using namespace std;
 
