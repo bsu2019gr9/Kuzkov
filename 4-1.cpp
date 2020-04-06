@@ -5,22 +5,13 @@
 
 using namespace std;
 
-bool isLetter(char letter)
+bool isLetter(char c, string& delimeters)
 {
-    if ('A' <= letter && letter <= 'Z' ||
-        'a' <= letter && letter <= 'z')
-        return true;
-    return false;
-}
+    for (int i = 0; i < delimeters.length(); i++)
+        if (c == delimeters[i])
+            return false;
 
-string toLower(string str)
-{
-    for (int i = 0; i < str.length(); i++)
-    {
-        if ('A' <= str[i] && str[i] <= 'Z')
-            str[i] = str[i] - ('Z' - 'z');
-    }
-    return str;
+    return true;
 }
 
 /*
@@ -29,6 +20,8 @@ string toLower(string str)
  */
 int main()
 {
+    setlocale(LC_ALL, "Russian");
+
     ifstream fin("data.txt");
     ofstream fout("res.txt");
     if (!fin)
@@ -45,6 +38,7 @@ int main()
     map<string, int> counter;
 
     string word;
+    string delimeters = "` .,'\":;!?\t()-1234567890";
     char c;
     int length = 0;
 
@@ -53,21 +47,21 @@ int main()
 
     while (fin.get(c))
     {
-        if (isLetter(c))
+        if (isLetter(c, delimeters))
         {
             word += c;
             length++;
         }
         else if (length > 0)
         {
-            counter[toLower(word)] += 1;
+            counter[word] += 1;
             length = 0;
             word = "";
         }
     }
     if (length > 0)
     {
-        counter[toLower(word)] += 1;
+        counter[word] += 1;
         length = 0;
         word = "";
     }
@@ -82,6 +76,8 @@ int main()
         {
             searchWord = it->first;
             count = it->second;
+
+            cout << "Word deleted: " << searchWord << endl;
             break;
         }
     }
@@ -96,7 +92,7 @@ int main()
 
     while (fin.get(c))
     {
-        if (isLetter(c))
+        if (isLetter(c, delimeters))
         {
             word += c;
             length++;

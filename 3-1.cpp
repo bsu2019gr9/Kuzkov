@@ -1,14 +1,16 @@
 #include <iostream>
 #include <string>
+#include <cstring>
 
 using namespace std;
 
-bool isLetter(char letter)
+bool isLetter(char c, string& delimeters)
 {
-    if (65 <= letter && letter <= 87 || // A-Z
-        97 <= letter && letter <= 119)  // a-z
-        return true;
-    return false;
+    for (int i = 0; i < delimeters.length(); i++)
+        if (c == delimeters[i])
+            return false;
+
+    return true;
 }
 
 /*
@@ -18,7 +20,9 @@ bool isLetter(char letter)
  */
 int main()
 {
+    setlocale(LC_ALL, "Russian");
     string str, word;
+    string delimeters = "` .,'\":;!?\t()-1234567890";
 
     getline(cin, str);
     str =  str + ' ';
@@ -27,7 +31,7 @@ int main()
 
     for (int i = 0; i < str.length(); i++)
     {
-        if (isLetter(str[i]))
+        if (isLetter(str[i], delimeters))
         {
             word += str[i];
             length++;
@@ -50,7 +54,7 @@ int main()
 
     for (int i = 0; i < str.length(); i++)
     {
-        if (isLetter(str[i]))
+        if (isLetter(str[i], delimeters))
         {
             word += str[i];
             length++;
