@@ -4,21 +4,22 @@
 
 using namespace std;
 
-void allocMemory(int *&arr, const int N) {
+void createArray(int *&arr, const int N) {
   arr = new int[N];
 }
 
-int* allocMemory(const int N) {
+int* createArray(const int N) {
   return new int[N];
 }
 
 void freeMemory(int *&arr, const int N) {
   delete[] arr;
-  arr = nullptr;
 }
 
 void initArray(int arr[], const int N, int A, int B)
 {
+  srand(time(NULL));
+
   if (A > B) swap(A, B);
   
   double k1 = (B - A) * 1.0 / (RAND_MAX);

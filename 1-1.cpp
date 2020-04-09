@@ -1,8 +1,12 @@
 #include <iostream>
+#include <ctime>
 #include <algorithm>
-#include "lib/1D-functions.h"
+#include "1D-functions.h"
 
 using namespace std;
+
+int countOfRepeatingElements(int[], const int);
+int maxCountOfEqualElements(int[], const int);
 
 /* 
  * 1. В массиве размера N, заполненного случ.числами
@@ -17,65 +21,68 @@ int main()
 {
   srand(time(NULL));
 
-  int size;
-  cout << "Enter size of array: "; cin >> size;
-  int* arr = allocMemory(size);
+  int N;
+  cout << "Enter size of array: "; cin >> N;
+  int* arr = createArray(N);
 
-  initArray(arr, size);
-
-  cout << "Array: ";
-  printArray(arr, size);
-
-  sort(arr, arr + size);
-  
-  cout << "Sorted: ";
-  printArray(arr, size);
-
-  int count = 0, temp_count = 1;
-  for (int *p = arr + 1; p < arr + size; p++)
-  {
-    if (*p == *(p-1))
-      temp_count++;
-    else
-    {
-      if (temp_count > 1)
-        count++;
-      temp_count = 1;
-    }
-  }
-  if (temp_count > 1) count++;
-
-  cout << "Count of repeating elements: " << count << endl;
-  cout << endl;
-
-  initArray(arr, size);
+  initArray(arr, N);
 
   cout << "Array: ";
-  printArray(arr, size);
+  printArray(arr, N);
 
-  sort(arr, arr + size);
+  sort(arr, arr + N);
   
   cout << "Sorted: ";
-  printArray(arr, size);
+  printArray(arr, N);
 
-  count = 0;
-  temp_count = 1;
-  for (int *p = arr + 1; p < arr + size; p++)
-  {
-    if (*p == *(p-1))
-      temp_count++;
-    else
-    {
-      if (temp_count > count)
-        count = temp_count;
-      temp_count = 1;
-    }
-  }
-  if (temp_count > count) count = temp_count;
+  cout << "Count of repeating elements: " <<
+    countOfRepeatingElements(arr, N) << endl;
 
-  cout << "Max count of equal elements: " << count << endl;
+  cout << "Max count of equal elements: " <<
+    maxCountOfEqualElements(arr, N) << endl;
 
-  freeMemory(arr, size);
+  freeMemory(arr, N);
 
   return 0;
+}
+
+int countOfRepeatingElements(int arr[], const int N)
+{
+    int res = 0, count = 1;
+
+    for (int *p = arr + 1; p < arr + N; p++)
+    {
+      if (*p == *(p-1))
+        count++;
+      else
+      {
+        if (count > 1)
+          res++;
+        count = 1;
+      }
+    }
+    if (count > 1) res++;
+    
+    return res;
+}
+
+
+int maxCountOfEqualElements(int arr[], const int N)
+{
+    int maxCount = 0, count = 1;
+
+    for (int *p = arr + 1; p < arr + N; p++)
+    {
+      if (*p == *(p-1))
+        count++;
+      else
+      {
+        if (count > maxCount)
+          maxCount = count;
+        count = 1;
+      }
+    }
+    if (count > maxCount) maxCount = count;
+    
+    return maxCount;
 }

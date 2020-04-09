@@ -1,9 +1,9 @@
 #pragma once
 
-void allocMemory(int*&, const int);
-int* allocMemory(const int);  
+void createArray(int*&, const int);
+int* createArray(const int);
 void freeMemory(int*&, const int);
-void initArray(int[], const int, int = 10, int = -10);
+void initArray(int[], const int, int = -10, int = 10);
 void printArray(int[], const int);
 
 int indexOfMax(int[], int);

@@ -1,13 +1,10 @@
 #include <iostream>
-#include <iomanip>
+#include <ctime>
+#include "2D-functions.h"
 
 using namespace std;
 
-int **createArray(const int, const int);
-void freeMemory(int**&, const int, const int);
-void initArray(int**, const int, const int, int = 10, int = -10);
-void printArray(int**, const int, const int, const int = 3);
-void swapMaxAndMinColumns(int **, const int, const int);
+void findMaxAndMinColumns(int**, int**&, int**&, const int, const int);
 int getCountOfOdd(int*, int*);
 
 /* 
@@ -21,16 +18,20 @@ int main()
 {
   srand(time(NULL));
 
-  int N, M;
-  cout << "Enter cols, rows: "; cin >> N >> M;
+  int M, N;
+  cout << "Enter rows, cols: "; cin >> M >> N;
+  cout << endl;
+
   int **arr = createArray(N, M);
+  int **pmin, **pmax;
 
   initArray(arr, N, M);
   cout << "Current array: " << endl;
   printArray(arr, N, M);
   cout << endl;
 
-  swapMaxAndMinColumns(arr, N, M);
+  findMaxAndMinColumns(arr, pmin, pmax, N, M);
+  swap(*pmin, *pmax);
 
   cout << "Swapped: " << endl;
   printArray(arr, N, M);
@@ -40,57 +41,16 @@ int main()
   return 0;
 }
 
-int **createArray(const int N, const int M)
-{
-  int **arr = new int*[N];
-  for (int i = 0; i < N; i++)
-    arr[i] = new int[M];
-  return arr;
-}
-
-void freeMemory(int **&arr, const int N, const int M)
-{
-  for (int i = 0; i < N; i++)
-  {
-    delete[] arr[i];
-    arr[i] = nullptr;
-  }
-  delete[] arr;
-  arr = nullptr;
-}
-
-void initArray(int **arr, const int N, const int M, int A, int B)
-{
-  if (A > B) swap(A, B);
-  
-  double k1 = (B - A) * 1.0 / RAND_MAX;
-  
-  for (int i = 0; i < N; i++)
-    for (int j = 0; j < M; j++)
-      arr[i][j] = k1 * rand() + A;
-}
-
-void printArray(int **arr, const int N, const int M, const int columnSize)
-{
-  for (int i = 0; i < M; i++)
-  {
-    for (int j = 0; j < N; j++)
-      cout << setw(columnSize) << arr[j][i] << " ";
-    cout << endl;
-  }
-}
-
-void swapMaxAndMinColumns(int **arr, const int N, const int M)
+void findMaxAndMinColumns(int **arr, int **&pmin, int **&pmax, const int M, const int N)
 { 
   int max, min;
-  int **pmax, **pmin;
 
   max = min = getCountOfOdd(*arr, *arr + M);
   pmin = pmax = arr;
 
-  for (int **p = arr + 1; p < arr + N; p++)
+  for (int **p = arr + 1; p < arr + M; p++)
   {
-    int count = getCountOfOdd(*p, *p + M);
+    int count = getCountOfOdd(*p, *p + N);
 
     if (count > max)
     {
@@ -104,8 +64,6 @@ void swapMaxAndMinColumns(int **arr, const int N, const int M)
       min = count;
     }
   }
-
-  swap(*pmax, *pmin);
 }
 
 int getCountOfOdd(int *begin, int *end)

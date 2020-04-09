@@ -1,3 +1,13 @@
+#include <iostream>
+#include <iomanip>
+#include <cmath>
+#include "1D-functions.h"
+
+using namespace std;
+
+double arctg(double, double);
+double exp(double, double);
+
 /* 
  * Вычисление интегральных сумм
  * f(x) = arctg(x) + 2*e^x
@@ -5,34 +15,23 @@
  * a = 0, b = 1
  * h = 0.2
  */
-
-#include <iostream>
-#include <iomanip>
-#include <cmath>
-#include "lib/1D-functions.h"
-
-using namespace std;
-
-double arctg(double, double);
-double exp(double, double);
-
 int main() {
-  int* arr = allocMemory(10);
+  int* arr = createArray(10);
   initArray(arr, 10);
 
   const int WIDTH = 10;
-  double a = 0, b = 1, eps = 0.0001, h = 0.2;
+  const double EPS = 0.0001;
+  double a = 0, b = 1, h = 0.2;
 
-  cout << setw(WIDTH - 5) << "x" << setw(WIDTH) << "f(x)" << setw(WIDTH) << "F(x)\n";
+  cout << setw(WIDTH) << "x" << setw(WIDTH) << "f(x)" << setw(WIDTH) << "F(x)\n";
 
   for (double x = a; x <= b; x += h)
   {
-    cout << setw(WIDTH - 5) << x;
-    cout << setw(WIDTH) << arctg(x, eps) + 2 * exp(x);
-    cout << setw(WIDTH) << arctg(x, eps) + 2 * exp(x) << "\n";
+    cout << setw(WIDTH) << x;
+    cout << setw(WIDTH) << arctg(x, EPS) + 2 * exp(x, EPS);
+    cout << setw(WIDTH) << atan(x) + 2 * exp(x) << "\n";
   }
 
-  system("pause");
   return 0;
 }
 
