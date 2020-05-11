@@ -49,9 +49,9 @@ void radialGradient(int, int, int, int*, int, int);
 int main()
 {
     int mx, my;
-    int *data = loadBMP("file.bmp", mx, my);
+    int *data = loadBMP("file.bmp", mx, my); //я не понял зачем мне читать файл, если я его внутренность не использую???
 
-    radialGradient(128, 128, 50, data, mx, my);
+    radialGradient(128, 128, 50, data, mx, my);//цвет (начальный и конечный)  я просил вводить!!! 
 
     saveBMP("file.bmp", data, mx, my);
     delete[] data;
@@ -64,29 +64,29 @@ int *loadBMP(const char *fname, int &mx, int &my)
 {
     mx = my = -1;
     
-    FILE *f = fopen(fname, "rb");
+    FILE *f = fopen(fname, "rb");//мы НЕ пользуемся С. Мы пользуемся для работы с файлами потоками в С++
 
     if(!f)
         return nullptr;
 
     BMPheader bh;
-    size_t res = fread(&bh, 1, sizeof(BMPheader), f);
+    size_t res = fread(&bh, 1, sizeof(BMPheader), f);//мы НЕ пользуемся С. Мы пользуемся для работы с файлами потоками в С++
 
     if(res != sizeof(BMPheader))
     {
-        fclose(f);
+        fclose(f);//мы НЕ пользуемся С. Мы пользуемся для работы с файлами потоками в С++
         return nullptr;
     }
 
     if(bh.bfType!=0x4d42 && bh.bfType!=0x4349 && bh.bfType!=0x5450)
     { 
-        fclose(f);
+        fclose(f);//мы НЕ пользуемся С. Мы пользуемся для работы с файлами потоками в С++
         return nullptr;
     }
 
-    fseek(f, 0, SEEK_END);
-    int filesize = ftell(f);
-    fseek(f, sizeof(BMPheader), SEEK_SET);
+    fseek(f, 0, SEEK_END);//мы НЕ пользуемся С. Мы пользуемся для работы с файлами потоками в С++
+    int filesize = ftell(f);//мы НЕ пользуемся С. Мы пользуемся для работы с файлами потоками в С++
+    fseek(f, sizeof(BMPheader), SEEK_SET);//мы НЕ пользуемся С. Мы пользуемся для работы с файлами потоками в С++
 
     if(bh.bfSize != filesize ||
        bh.bfReserved != 0 ||
@@ -98,27 +98,27 @@ int *loadBMP(const char *fname, int &mx, int &my)
        bh.biBitCount != 24 ||
        bh.biCompression != 0) 
     {
-        fclose(f); 
+        fclose(f); //мы НЕ пользуемся С. Мы пользуемся для работы с файлами потоками в С++
         return nullptr; 
     }
 
     mx = bh.biWidth;
     my = bh.biHeight;
 
-    int mx3 = (3*mx+3) & (-4);
+    int mx3 = (3*mx+3) & (-4);// к этой строке надо коментарий обязательно. Иначе это просто "магия" )))
 
     unsigned char *tmp_buf = new unsigned char[mx3*my];
-    res = fread(tmp_buf, 1, mx3*my, f);
+    res = fread(tmp_buf, 1, mx3*my, f);//мы НЕ пользуемся С. Мы пользуемся для работы с файлами потоками в С++
 
     if((int)res != mx3*my)
     {
         delete []tmp_buf;
-        fclose(f);
+        fclose(f);//мы НЕ пользуемся С. Мы пользуемся для работы с файлами потоками в С++
         return nullptr;
     }
     fclose(f); 
 
-    int *v = new int[mx*my];
+    int *v = new int[mx*my];//без проверок???
 
     unsigned char *ptr = (unsigned char *) v;
     for(int y = my-1; y >= 0; y--) {
@@ -152,11 +152,11 @@ int saveBMP(const char *fname, int *v, int mx, int my)
     bh.biBitCount = 24;
     bh.biCompression= 0;
 
-    FILE *f = fopen( fname, "wb" );
+    FILE *f = fopen( fname, "wb" );//мы НЕ пользуемся С. Мы пользуемся для работы с файлами потоками в С++
     if( !f ) return -1;
     size_t res;
 
-    res = fwrite( &bh, 1, sizeof(BMPheader), f );
+    res = fwrite( &bh, 1, sizeof(BMPheader), f );//мы НЕ пользуемся С. Мы пользуемся для работы с файлами потоками в С++
     if( res != sizeof(BMPheader) ) { fclose(f); return -1; }
 
     unsigned char *tmp_buf = new unsigned char[mx3*my];
@@ -171,15 +171,15 @@ int saveBMP(const char *fname, int *v, int mx, int my)
             ptr++;
         }
     }
-    fwrite( tmp_buf, 1, mx3*my, f );
-    fclose(f);
+    fwrite( tmp_buf, 1, mx3*my, f );//мы НЕ пользуемся С. Мы пользуемся для работы с файлами потоками в С++
+    fclose(f);//мы НЕ пользуемся С. Мы пользуемся для работы с файлами потоками в С++
     delete []tmp_buf;
     return 0;
 }
 
 int rgb(int r, int g, int b)
-{
-    return (b << 8*2) | (g << 8) | r;
+{//не ронимаю зачем так сложно. Если у тебя уже есть компоненты зачем их в один новый int пихать. Почему просто не выводить в файл последовательно????
+    return (b << 8*2) | (g << 8) | r;//это сработает ТОЛЬКО если sizeof(int)=4 байт, а это нельзя гарантировать
 }
 
 float dist(int x1, int y1, int x2, int y2)
@@ -202,7 +202,7 @@ void radialGradient(int x, int y, int r, int *data, int mx, int my)
     {
         for (int j = 0; j < mx; j++)
         {
-            data[i*my + j] = lerp(255, 0, 0, 0, 0, 255, dist(i, j, x, y) / r);
+            data[i*my + j] = lerp(255, 0, 0, 0, 0, 255, dist(i, j, x, y) / r); ;//цвет (начальный и конечный)  я просил вводить!!! 
         }
     }
 }
