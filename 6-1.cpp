@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <stdio.h>
 #include <cstring>
 #include <stdint.h>
@@ -6,13 +7,9 @@
 
 using namespace std;
 
+typedef uint8_t BYTE;
 typedef int16_t WORD;
 typedef int32_t D_WORD;
-
-typedef struct {
-    D_WORD count;
-    WORD count2;
-} example;
 
 #pragma pack(push, 2)
 struct BMPheader {
@@ -39,54 +36,98 @@ struct BMPheader {
 };
 #pragma pack(pop)
 
-int *loadBMP(const char*, int&, int&);
-int saveBMP(const char*, int*, int, int);
+struct RGB {
+    BYTE R;
+    BYTE G;
+    BYTE B;
 
-int rgb(int, int, int);
+    RGB() : R(0), G(0), B(0)
+    {}
 
-void radialGradient(int, int, int, int*, int, int);
+    RGB(BYTE _R, BYTE _G, BYTE _B) : R(_R), G(_G), B(_B)
+    {}
+};
+
+template <typename T>
+T** createArray2D (int, int);
+
+template <typename T>
+void deleteArray2D (T**, int, int);
+
+RGB** loadBMP(const char*, int&, int&);
+int saveBMP(const char*, RGB**, int, int);
+
+double dist(int, int, int, int);
+RGB lerp(RGB&, RGB&, double);
+
+void radialGradient(int, int, int, RGB&&, RGB&&, RGB**, int, int);
 
 int main()
 {
-    int mx, my;
-    int *data = loadBMP("file.bmp", mx, my);
+    int w = 256;
+    int h = 256;
+    const int r = 50;
 
-    radialGradient(128, 128, 50, data, mx, my);
+    RGB **data = loadBMP("res.bmp", w, h);
 
-    saveBMP("file.bmp", data, mx, my);
-    delete[] data;
+    radialGradient(
+        w / 2, h / 2, r,
+        RGB(255, 255, 255),
+        RGB(0, 0, 0),
+        data, w, h
+    );
+
+    saveBMP("res.bmp", data, w, h);
+
+    deleteArray2D<RGB>(data, 256, 256);
 
     return 0;
 }
 
 
-int *loadBMP(const char *fname, int &mx, int &my)
+template <typename T>
+T** createArray2D (int rows, int columns)
 {
-    mx = my = -1;
-    
-    FILE *f = fopen(fname, "rb");
+    T **res = new T*[rows];
+    for (T **it = res; it < res + rows; it++)
+        *it = new T[columns];
+    return res;
+}
 
-    if(!f)
+template <typename T>
+void deleteArray2D (T **arr, int rows, int columns)
+{
+    for (T **it = arr; it < arr + rows; it++)
+        delete[] *it;
+    delete[] arr;
+}
+
+
+
+RGB** loadBMP(const char *fname, int &w, int &h)
+{
+    w = h = -1;
+    
+    ifstream fin;
+    fin.open(fname, ios_base::binary);
+
+    if(!fin.is_open())
         return nullptr;
 
     BMPheader bh;
-    size_t res = fread(&bh, 1, sizeof(BMPheader), f);
+    fin.read((char*) &bh, sizeof(bh));
 
-    if(res != sizeof(BMPheader))
-    {
-        fclose(f);
-        return nullptr;
-    }
-
-    if(bh.bfType!=0x4d42 && bh.bfType!=0x4349 && bh.bfType!=0x5450)
+    if (bh.bfType != 0x4d42 &&
+        bh.bfType!=0x4349 &&
+        bh.bfType!=0x5450)
     { 
-        fclose(f);
+        fin.close();
         return nullptr;
     }
 
-    fseek(f, 0, SEEK_END);
-    int filesize = ftell(f);
-    fseek(f, sizeof(BMPheader), SEEK_SET);
+    fin.seekg(0, ios_base::end);
+    int filesize = fin.tellg();
+    fin.seekg(sizeof(bh), ios_base::beg);
 
     if(bh.bfSize != filesize ||
        bh.bfReserved != 0 ||
@@ -98,111 +139,79 @@ int *loadBMP(const char *fname, int &mx, int &my)
        bh.biBitCount != 24 ||
        bh.biCompression != 0) 
     {
-        fclose(f); 
+        fin.close(); 
         return nullptr; 
     }
 
-    mx = bh.biWidth;
-    my = bh.biHeight;
+    w = bh.biWidth;
+    h = bh.biHeight;
 
-    int mx3 = (3*mx+3) & (-4);
+    const int BYTES_IN_ROW = 3 * w;
 
-    unsigned char *tmp_buf = new unsigned char[mx3*my];
-    res = fread(tmp_buf, 1, mx3*my, f);
+    RGB **data = createArray2D<RGB>(h, w);
 
-    if((int)res != mx3*my)
-    {
-        delete []tmp_buf;
-        fclose(f);
-        return nullptr;
-    }
-    fclose(f); 
+    for (int i = h - 1; i >= 0; i--)
+        fin.read((char*) data[i], BYTES_IN_ROW);
 
-    int *v = new int[mx*my];
-
-    unsigned char *ptr = (unsigned char *) v;
-    for(int y = my-1; y >= 0; y--) {
-        unsigned char *pRow = tmp_buf + mx3*y;
-        for(int x=0; x< mx; x++) {
-            *ptr++ = *(pRow + 2);
-            *ptr++ = *(pRow + 1);
-            *ptr++ = *pRow; 
-            pRow+=3;
-            ptr ++;
-        }
-    }
-    delete []tmp_buf;
-    return v;
+    return data;
 }
 
-int saveBMP(const char *fname, int *v, int mx, int my)
+int saveBMP(const char *fname, RGB **data, int w, int h)
 {
     BMPheader bh;
-    memset( &bh, 0, sizeof(bh) );
+
+    const int BYTES_IN_ROW = (3*w+3) & (-4);
+    const int filesize = sizeof(BMPheader) + h * BYTES_IN_ROW;
+
     bh.bfType =0x4d42;
-    int mx3 = (3*mx+3) & (-4);
-    int filesize = 54 + my*mx3;
     bh.bfSize = filesize;
-    bh.bfReserved =  0;
-    bh.biPlanes   =  1;
-    bh.biSize     = 40;
-    bh.bfOffBits  = 14 + bh.biSize;
-    bh.biWidth    = mx;
-    bh.biHeight   = my;
+    bh.bfReserved = 0;
+    bh.biPlanes = 1;
+    bh.biSize = 40;
+    bh.bfOffBits = 14 + bh.biSize;
+    bh.biWidth = w;
+    bh.biHeight = h;
     bh.biBitCount = 24;
     bh.biCompression= 0;
 
-    FILE *f = fopen( fname, "wb" );
-    if( !f ) return -1;
-    size_t res;
+    ofstream fout;
+    fout.open(fname, ios_base::binary);
 
-    res = fwrite( &bh, 1, sizeof(BMPheader), f );
-    if( res != sizeof(BMPheader) ) { fclose(f); return -1; }
+    if (!fout.is_open())
+        return -1;
 
-    unsigned char *tmp_buf = new unsigned char[mx3*my];
-    unsigned char *ptr = (unsigned char *) v;
-    for(int y = my-1; y >= 0; y--) {
-        unsigned char *pRow = tmp_buf + mx3*y;
-        for(int x=0; x< mx; x++) {
-            *(pRow + 2) = *ptr++;
-            *(pRow + 1) = *ptr++;
-            *pRow       = *ptr++; 
-            pRow+=3;
-            ptr++;
-        }
-    }
-    fwrite( tmp_buf, 1, mx3*my, f );
-    fclose(f);
-    delete []tmp_buf;
+    fout.write((char*) &bh, sizeof(bh));
+
+    for(int i = h - 1; i >= 0; i--)
+        fout.write((char*) data[i], w * 3);
+
+    fout.close();
     return 0;
 }
 
-int rgb(int r, int g, int b)
-{
-    return (b << 8*2) | (g << 8) | r;
-}
 
-float dist(int x1, int y1, int x2, int y2)
+
+double dist(int x1, int y1, int x2, int y2)
 {
     return sqrt((x1 - x2)*(x1 - x2) + (y1 - y2)*(y1 - y2));
 }
 
-int lerp(int r1, int g1, int b1, int r2, int g2, int b2, float k)
+RGB lerp(RGB &from, RGB &to, double k)
 {
     if (k > 1) k = 1;
-    return rgb(
-        (r2 - r1)*k + r1,
-        (g2 - g1)*k + g1,
-        (b2 - b1)*k + b1);
+
+    return RGB(
+        (to.R - from.R)*k + from.R,
+        (to.G - from.G)*k + from.G,
+        (to.B - from.B)*k + from.B
+    );
 }
 
-void radialGradient(int x, int y, int r, int *data, int mx, int my)
+
+
+void radialGradient(int x, int y, int r, RGB &&from, RGB &&to, RGB** data, int w, int h)
 {
-    for (int i = 0; i < my; i++)
-    {
-        for (int j = 0; j < mx; j++)
-        {
-            data[i*my + j] = lerp(255, 0, 0, 0, 0, 255, dist(i, j, x, y) / r);
-        }
-    }
+    for (int i = 0; i < h; i++)
+        for (int j = 0; j < w; j++)
+            data[i][j] = lerp(from, to, dist(i, j, x, y) / r);
 }
