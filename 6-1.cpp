@@ -64,11 +64,11 @@ void radialGradient(int, int, int, RGB&&, RGB&&, RGB**, int, int);
 
 int main()
 {
-    int w = 256;
-    int h = 256;
-    const int r = 50;
+    int w = 1024;
+    int h = 1024;
+    const int r = 256;
 
-    RGB **data = loadBMP("res.bmp", w, h);
+    RGB **data = createArray2D<RGB>(w, h);
 
     radialGradient(
         w / 2, h / 2, r,
