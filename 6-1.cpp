@@ -79,7 +79,7 @@ int main()
 
     saveBMP("res.bmp", data, w, h);
 
-    deleteArray2D<RGB>(data, 256, 256);
+    deleteArray2D<RGB>(data, 256, 256);//256???? точно?
 
     return 0;
 }
@@ -160,7 +160,7 @@ int saveBMP(const char *fname, RGB **data, int w, int h)
 {
     BMPheader bh;
 
-    const int BYTES_IN_ROW = (3*w+3) & (-4);
+    const int BYTES_IN_ROW = (3*w+3) & (-4);//магическая константа должна быть как-то задокументирована
     const int filesize = sizeof(BMPheader) + h * BYTES_IN_ROW;
 
     bh.bfType =0x4d42;
