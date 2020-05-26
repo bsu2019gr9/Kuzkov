@@ -36,6 +36,7 @@ struct BMPheader {
 };
 #pragma pack(pop)
 
+#pragma pack(push, 1)
 struct RGB {
     BYTE R;
     BYTE G;
@@ -47,6 +48,7 @@ struct RGB {
     RGB(BYTE _R, BYTE _G, BYTE _B) : R(_R), G(_G), B(_B)
     {}
 };
+#pragma pack(pop)
 
 template <typename T>
 T** createArray2D (int, int);
@@ -58,28 +60,29 @@ RGB** loadBMP(const char*, int&, int&);
 int saveBMP(const char*, RGB**, int, int);
 
 double dist(int, int, int, int);
-RGB lerp(RGB&, RGB&, double);
+RGB lerp(const RGB&, const RGB&, double);
 
-void radialGradient(int, int, int, RGB&&, RGB&&, RGB**, int, int);
+void radialGradient(int, int, int, const RGB&, const RGB&, RGB**, int, int);
 
 int main()
 {
-    int w = 1024;
-    int h = 1024;
-    const int r = 256;
+    const int CANVAS_WIDTH  = 1024;
+    const int CANVAS_HEIGHT = 1024;
+    const int GRADIENT_RADIUS = 256;
+    const RGB COLOR_FROM(255, 255, 255);
+    const RGB COLOR_TO(0, 0, 0);
 
-    RGB **data = createArray2D<RGB>(w, h);
+    RGB **data = createArray2D<RGB>(CANVAS_WIDTH, CANVAS_HEIGHT);
 
     radialGradient(
-        w / 2, h / 2, r,
-        RGB(255, 255, 255),
-        RGB(0, 0, 0),
-        data, w, h
+        CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2, GRADIENT_RADIUS,
+        COLOR_FROM, COLOR_TO,
+        data, CANVAS_WIDTH, CANVAS_HEIGHT
     );
 
-    saveBMP("res.bmp", data, w, h);
+    saveBMP("res.bmp", data, CANVAS_WIDTH, CANVAS_HEIGHT);
 
-    deleteArray2D<RGB>(data, 256, 256);
+    deleteArray2D<RGB>(data, CANVAS_WIDTH, CANVAS_HEIGHT);
 
     return 0;
 }
@@ -146,7 +149,7 @@ RGB** loadBMP(const char *fname, int &w, int &h)
     w = bh.biWidth;
     h = bh.biHeight;
 
-    const int BYTES_IN_ROW = 3 * w;
+    const int BYTES_IN_ROW = sizeof(RGB) * w;
 
     RGB **data = createArray2D<RGB>(h, w);
 
@@ -160,7 +163,7 @@ int saveBMP(const char *fname, RGB **data, int w, int h)
 {
     BMPheader bh;
 
-    const int BYTES_IN_ROW = (3*w+3) & (-4);
+    const int BYTES_IN_ROW = sizeof(RGB) * w;
     const int filesize = sizeof(BMPheader) + h * BYTES_IN_ROW;
 
     bh.bfType =0x4d42;
@@ -183,7 +186,7 @@ int saveBMP(const char *fname, RGB **data, int w, int h)
     fout.write((char*) &bh, sizeof(bh));
 
     for(int i = h - 1; i >= 0; i--)
-        fout.write((char*) data[i], w * 3);
+        fout.write((char*) data[i], BYTES_IN_ROW);
 
     fout.close();
     return 0;
@@ -196,7 +199,7 @@ double dist(int x1, int y1, int x2, int y2)
     return sqrt((x1 - x2)*(x1 - x2) + (y1 - y2)*(y1 - y2));
 }
 
-RGB lerp(RGB &from, RGB &to, double k)
+RGB lerp(const RGB &from, const RGB &to, double k)
 {
     if (k > 1) k = 1;
 
@@ -209,7 +212,7 @@ RGB lerp(RGB &from, RGB &to, double k)
 
 
 
-void radialGradient(int x, int y, int r, RGB &&from, RGB &&to, RGB** data, int w, int h)
+void radialGradient(int x, int y, int r, const RGB &from, const RGB &to, RGB** data, int w, int h)
 {
     for (int i = 0; i < h; i++)
         for (int j = 0; j < w; j++)
